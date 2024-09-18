@@ -49,9 +49,9 @@ end
 %higher acceleration just to keep up with the schedule)
 accL=[100,ceil(abs(diff(speedL)./diff(timing)))];
 accR=[100,ceil(abs(diff(speedR)./diff(timing)))];
-if (any(accL>1500))||(any(accR>1500))
+if (any(accL>15000))||(any(accR>15000))
     disp('Error: trying to accelerate too fast')
-    return
+    % return
 end
 accL=round(2*accL); %100% margin
 accR=round(2*accR); %100% margin
@@ -78,7 +78,7 @@ if testing
     sendTreadmillPacket2(payload,t) %%%%%%%%%% use 2 for testing
 else
     sendTreadmillPacket(payload,t);
-    [cur_speedR(1),cur_speedL(1),cur_incl(1)] = readCurrentTreadmillData(t);
+    [cur_speedR(1),cur_speedL(1),cur_incl(1)] = readCurrentTreadmillData(t)
 end
 %Read reply
 if ~testing
@@ -86,35 +86,35 @@ readTimer(1)=etime(clock,baseTime);
 end
 
 if testing
-for i=2:length(timing)
-    [payload] = getPayload(speedR(i),speedL(i),accR(i),accL(i),0); %Get new payload
-    curTime=clock; %Get new time
-    elapsedTime=etime(curTime,baseTime);
-    while elapsedTime<newTiming(i)
-        curTime=clock; %Keep getting time until we can send packet
+    for i=2:length(timing)
+        [payload] = getPayload(speedR(i),speedL(i),accR(i),accL(i),0); %Get new payload
+        curTime=clock; %Get new time
         elapsedTime=etime(curTime,baseTime);
+        while elapsedTime<newTiming(i)
+            curTime=clock; %Keep getting time until we can send packet
+            elapsedTime=etime(curTime,baseTime);
+        end
+        sendTreadmillPacket2(payload,t) %%%%%%%% Use 2 for testing
+        sentTimer(i)=elapsedTime;
+        sentVR(i)=bytes2Int(payload(2:3));
+        sentVL(i)=bytes2Int(payload(4:5));
     end
-    sendTreadmillPacket2(payload,t) %%%%%%%% Use 2 for testing
-    sentTimer(i)=elapsedTime;
-    sentVR(i)=bytes2Int(payload(2:3));
-    sentVL(i)=bytes2Int(payload(4:5));
-end
 else
     for i=2:length(timing)
-    [payload] = getPayload(speedR(i),speedL(i),accR(i),accL(i),0); %Get new payload
-    curTime=clock; %Get new time
-    elapsedTime=etime(curTime,baseTime);
-    while elapsedTime<newTiming(i)
-        curTime=clock; %Keep getting time until we can send packet
+        [payload] = getPayload(speedR(i),speedL(i),accR(i),accL(i),0); %Get new payload
+        curTime=clock; %Get new time
         elapsedTime=etime(curTime,baseTime);
+        while elapsedTime<newTiming(i)
+            curTime=clock; %Keep getting time until we can send packet
+            elapsedTime=etime(curTime,baseTime);
+        end
+        sendTreadmillPacket(payload,t);
+        [cur_speedR(i),cur_speedL(i),cur_incl(i)] = readCurrentTreadmillData(t);
+        readTimer(i)=etime(clock,baseTime);
+        sentTimer(i)=elapsedTime;
+        sentVR(i)=bytes2Int(payload(2:3));
+        sentVL(i)=bytes2Int(payload(4:5));
     end
-    sendTreadmillPacket(payload,t);
-    [cur_speedR(i),cur_speedL(i),cur_incl(i)] = readCurrentTreadmillData(t);
-    readTimer(i)=etime(clock,baseTime);
-    sentTimer(i)=elapsedTime;
-    sentVR(i)=bytes2Int(payload(2:3));
-    sentVL(i)=bytes2Int(payload(4:5));
-end
 end
 
 %Close comm

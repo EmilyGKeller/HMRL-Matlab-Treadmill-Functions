@@ -4,7 +4,7 @@ function [fullPayload] = getPayload(speedR,speedL,accR,accL,incline)
 
 
 %% Relevant parameters
-maxAcc=3000;
+maxAcc=14000;
 maxVel=6500;
 minVel=-6500;
 maxInc=1500;

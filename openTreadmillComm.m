@@ -3,7 +3,7 @@ function [t] = openTreadmillComm()
 %   Detailed explanation goes here
 
 
-t=tcpip('localhost',4000);
+t=tcpclient('localhost',4000);
 set(t,'InputBufferSize',32,'OutputBufferSize',64);
 fopen(t);
 
